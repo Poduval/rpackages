@@ -1,0 +1,77 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Package DT features
+
+Let's use `iris` data set for demonstration.
+
+Firs we need initialize the R environment.
+
+```{r init, echo=FALSE, message=FALSE}
+library(DT)
+library(dplyr)
+```
+
+Normal print (`dplyr`) method (this is pretty well as well)
+
+```{r}
+iris
+```
+
+## About
+
+The R package DT provides an R interface to the `JavaScript` library `DataTables`. R data objects (matrices or data frames) can be displayed as tables on HTML pages, and `DataTables` provides filtering, pagination, sorting, and many other features in the tables.
+
+The default options comes with various features such as:
+
+-   Number of entries to be displayed in each page
+
+-   Search option (performs text search)
+
+-   Sorting columns etc.
+
+Let us demonstrate the `DT:::datatable()` features.
+
+```{r}
+iris %>% datatable()
+```
+
+`datatable()` has the following arguments. Please execute `help(datatable)` for more information.
+
+```{r}
+args(datatable)
+```
+
+**We try to explain each of these parameters with simple examples**
+
+## Controlling parameters
+
+It is possible to disable these default viewing options.
+
+```{r}
+iris %>% head %>% 
+  datatable(options = list(searching = FALSE, 
+                           lengthChange = FALSE, 
+                           lengthMenu = c(2, 4, 6, 8),
+                           ordering = FALSE,
+                           info = FALSE, 
+                           paging = FALSE,
+                           pageLength = 4))
+```
+
+**Remark :** With `editable = TRUE`, you can enable editing.
+
+## Table formatting features
+
+Before proceeding we fix some options
+
+```{r}
+display_options <- list(searching = FALSE, 
+                        lengthChange = FALSE, 
+                        ordering = FALSE,
+                        info = FALSE, 
+                        paging = FALSE,
+                        pageLength = 4)
+```
