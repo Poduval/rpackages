@@ -1,0 +1,107 @@
+---
+title: "Creating methods in R"
+author: Rakesh Poduval, `r Sys.Date()`
+output:
+  html_document: 
+    toc: TRUE
+    toc_depth: 2
+    toc_float: TRUE
+    theme: yeti
+    highlight: monochrome
+---
+
+# Specification
+Methods in R is a very strong and popular feature. The document provides a simple example with a function we use it frequently in our shiny validation tools.
+
+# explore() function
+The following functions
+
+* *exploreX()* -> for vectors
+
+* *exploreData()* -> for data.frame
+
+Is used in  most of the shiny tools. We do have other strong R functions which does the same. But with basic functionalities available in R this function is developed keepins IAZI specifications in mind.
+
+## Step 1 - defining method
+define the parent function properly.
+```{r}
+explore <- function(x, ...) {
+  UseMethod("explore")
+}
+```
+
+## Step 2 - default operation
+define the default operation, in this case we expect non numeric vectors
+```{r}
+explore.default <- function(x, rnd = 4, ...) {
+  
+  stopifnot(class(x) %in% c('integer', 'numeric'))
+  prbs <- c(0, 0.02, 0.05, 0.25, 0.50, 0.75, 0.95, 0.98, 1)
+  nams <- c("Min", "P02", "P05", "P25", "Med", "P75", "P95", "P98", "Max")
+  qnts <- rbind.data.frame(round(quantile(x, 
+                                          probs = prbs, 
+                                          na.rm = T, 
+                                          names = F), rnd))
+  names(qnts) <- nams
+  cbind.data.frame(N = length(x), 
+                   Mis = sum(is.na(x) | x < 0), 
+                   Avg = round(mean(x, na.rm = T), rnd), 
+                   qnts, 
+                   Std = round(sd(x, na.rm = T), rnd))
+}
+```
+
+## Step 3 - extended to data.frame
+The function is extended to react to a data.frame
+```{r}
+explore.data.frame <- function(x, rnd = 4, colNames = colnames(x), ...) {
+  
+  stopifnot(nrow(x) > 0, colNames %in% colnames(x))
+  
+  c <- colnames(x[!sapply(x, class) %in% c('character', 'factor')])
+  c <- intersect(c, colNames)
+  
+  stopifnot(length(c) > 0)
+  
+  if (length(c) == 1) {
+    out <- explore.default(x[, c], rnd = rnd)
+    rownames(out) <- c
+  } else {
+    out <- do.call(rbind, apply(x[c], 2, explore.default, rnd = rnd))
+  }
+  return(out)
+}
+```
+
+## examples
+Now the function can be applied to both `vectors` and and a `data.frame`
+```{r}
+explore(iris)
+# explore(iris$Species)
+explore(iris$Sepal.Length)
+explore(iris, colNames = c('Sepal.Length', 'Petal.Length', 'Species'))
+
+
+```
+
+With the split function you are able to apply it with different groups
+```{r}
+# grouped by Species
+lapply(split(iris, iris$Species), explore)
+```
+
+# Pros and Cons
+
+**pros**
+
+* works for multiple grouping factors with mulpile variables.
+* very useful for the shiny tools we have.
+
+**cons**
+
+* not that fast
+* not adopted to `tidyverse` `group_by` operation
+
+# To do 
+* test the function with our scenarios
+* We can now replace both *exploreX()* and *exploreData()* with *explore()* in the shiny validation tools

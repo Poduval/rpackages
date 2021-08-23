@@ -1,0 +1,18 @@
+---
+title: "reports from shiny"
+author : Rakesh Poduval `r Sys.Date()`
+output: html_document
+params:
+  n: NA
+---
+
+A plot of `n` = `r params$n` random points.
+
+```{r, echo = F,  message = F, warning = F}
+plot(x = rnorm(params$n), 
+         y = log(rnorm(params$n)),
+         xlab = 'n',
+         ylab = 'log(n)',
+         main = 'n vs. long(n)',
+         col = 'blue')
+```

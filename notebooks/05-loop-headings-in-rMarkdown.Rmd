@@ -1,0 +1,52 @@
+---
+title: "looping of headings in RMarkdown"
+author: Rakesh Poduval, `r Sys.Date()`
+output:
+  html_document: 
+    toc: TRUE
+    toc_depth: 2
+    toc_float: TRUE
+    theme: yeti
+    highlight: monochrome
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Specification
+Example of how to do a looping over headings - sub sections in a RMarkdown report.
+
+
+# descriptive summary
+
+## summary of the full data
+This heading is generated manually
+```{r}
+summary(iris)
+```
+
+From here onwards the headings and the results are generated in a loop. The parameter in the chunk `result = asis` does the job
+```{r, results = "asis"}
+
+#' Generate md Code for a title
+mdTitle <- function(..., prefix = "##", sep = ""){
+  cat(prefix, ..., "\n", sep = sep)
+}
+
+#' Generate md Code for output
+mdOutput <- function(expr){
+  output <- capture.output(eval.parent(substitute(expr)))
+  writeLines(c("```", output, "```\n"))
+  invisible()
+}
+
+for (i in 1:4) {
+  mdTitle("summary of ", names(iris)[i])
+  mdOutput(summary(iris[[i]]))
+  mdOutput(plot(iris[[i]], xlab = '', ylab = '', main = ''))
+}
+```
+
+
