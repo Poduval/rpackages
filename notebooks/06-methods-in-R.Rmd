@@ -80,8 +80,6 @@ explore(iris)
 # explore(iris$Species)
 explore(iris$Sepal.Length)
 explore(iris, colNames = c('Sepal.Length', 'Petal.Length', 'Species'))
-
-
 ```
 
 With the split function you are able to apply it with different groups
@@ -94,7 +92,7 @@ lapply(split(iris, iris$Species), explore)
 
 **pros**
 
-* works for multiple grouping factors with mulpile variables.
+* works for multiple grouping factors with multiple variables.
 * very useful for the shiny tools we have.
 
 **cons**
