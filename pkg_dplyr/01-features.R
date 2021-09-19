@@ -7,7 +7,10 @@ utils::packageVersion("dplyr")
 
 # 2. Setup ====
 
-# _2.1 Data ====
+# _2.1 Initialize ====
+library(dplyr)
+
+# _2.2 Data ====
 if (FALSE) {
   # Data sets related to flights that departed from NYC in 2013
   install.packages("nycflights13")
@@ -21,16 +24,14 @@ if (FALSE) {
 
 df <- iris %>% as_tibble()
 
-# _2.2 Initialize ====
-library(dplyr)
-
-# 3. Basic operations ====
+# 3. Operations ====
 ?select # Extract existing variables
 ?filter # Extract existing observations
 ?mutate # Derive new variables
 ?summarise # Changing the unit of analysis --> applying statistics
 ?arrange
 ?group_by
+?across
 
 # _3.1 select ====
 df
@@ -79,6 +80,8 @@ df %>% mutate(
   Lag = lag(Sepal.Length), # copy with values one position up
   SepalLengthGrp = ntile(Sepal.Length, n = 10)) # group vector into n equal buckets 
 
+# Note: difference between mutate() & transmute() ?
+
 # _3.4 summarise ====
 # applicable for only non character and factor variables
 
@@ -109,16 +112,7 @@ df %>% arrange(desc(Sepal.Length)) %>% print(n = 4)
 df %>% arrange(Species, Sepal.Length) %>% print(n = 4)
 df %>% arrange(desc(Species), Sepal.Length) %>% print(n = 4)
 
-# 4. The pipe %>% operator ====
-# --> narrates the story
-df %>% dim
-df %>% 
-  select(Sepal.Length:Petal.Length) %>% 
-  mutate(ratio = Sepal.Length/Petal.Length) %>% 
-  filter(Sepal.Length > 5) %>% 
-  arrange(desc(Sepal.Length))
-
-# _4.1 group_by ====
+# _3.6 group_by ====
 # --> used along with summarise()
 df %>% count(Species)
 
@@ -137,6 +131,51 @@ df %>%
             avgPL = mean(Petal.Length),
             stdPL = sd(Petal.Length))
 # Note : use ungroup() to apply operations at row level again.
+
+# _3.7 across ====
+
+# __3.7.1 across with mutate ====
+df %>% mutate(across(.fns = round))
+df %>% mutate(across(-Species, .fns = round))
+df %>% mutate(across(where(is.factor), .fns = as.integer))
+df %>% mutate(across(starts_with("Petal"), .fns = mean))
+
+# __3.7.2 across with group_by & mutate ====
+df %>% 
+  group_by(Species) %>% 
+  mutate(across(starts_with("Petal"), mean))
+
+df %>% 
+  group_by(Species) %>% 
+  mutate(across(starts_with("Petal"),
+                list(avg = mean, std = sd),
+                .names = "{.col}.{.fn}")) %>% 
+  print(width = Inf)
+
+# __3.7.3 across with group_by & summarise ====
+df %>% 
+  group_by(Species) %>% 
+  summarise(across(starts_with("Petal"), mean))
+
+df %>%
+  group_by(Species) %>%
+  summarise(across(starts_with("Petal"), 
+                   list(avg = mean, std = sd),
+                   .names = "{.col}.{.fn}"))
+
+# _3.8 if_any and if_all ====
+df %>% filter(if_any(ends_with("Width"), ~ . > 4))
+df %>% filter(if_all(ends_with("Width"), ~ . > 2))
+
+# 4 The pipe %>% operator ====
+# --> narrates the story
+df %>% dim
+df %>% 
+  select(Sepal.Length:Petal.Length) %>% 
+  mutate(ratio = Sepal.Length/Petal.Length) %>% 
+  filter(Sepal.Length > 5) %>% 
+  arrange(desc(Sepal.Length)) %>% 
+  mutate()
 
 # 5. Joining data ====
 
