@@ -5,6 +5,7 @@ browseVignettes(package = "ggplot2")
 # 1. About ====
 # Grammar of Graphics
 utils::packageVersion("ggplot2") 
+packageDescription("ggplot2")
 
 # A geom is the geometrical object that a plot uses to represent data.
 # For example, bar charts use bar geoms, line charts use line geoms, 
@@ -21,18 +22,17 @@ library(ggplot2)
 df <- mpg %>% as_tibble()
 df
 
-
 # 3. Basic plots ====
 
 # _3.1 geom_point ====
 
 df %>% 
-  ggplot(mapping = aes(x = displ, y = hwy)) + 
+  ggplot(mapping = aes(x = displ, y = hwy)) +
   geom_point()
 
 df %>% 
   ggplot(mapping = aes(x = displ, y = hwy)) + 
-  geom_point(color = "blue")
+  geom_point(color = "blue", size = 2)
 
 # difference between defining parameters inside aesthetics and outside ?
 df %>% 
@@ -67,7 +67,7 @@ df %>%
 df %>% 
   ggplot(aes(x = displ, y = hwy)) +
   geom_point() +
-  geom_smooth(mapping = aes(x = displ, y = hwy))
+  geom_smooth()
 
 df %>% 
   ggplot(aes(x = displ, y = hwy)) +
@@ -82,8 +82,8 @@ df %>%
 # do more --> use smooth for sub sample, useful for some analysis
 df %>% 
   ggplot(aes(x = displ, y = hwy)) +
-  geom_point(mapping = aes(color = class)) + 
-  geom_smooth(data = filter(df, class == "subcompact"), se = FALSE)
+  geom_point(aes(color = class)) + 
+  geom_smooth(data = filter(df, class == "subcompact"), se = T)
 
 # _3.4 geom_boxplot ====
 df %>% 
@@ -100,15 +100,16 @@ df %>%
 
 df %>% 
   ggplot(aes(x = manufacturer)) +
-  geom_bar() +
+  geom_bar(stat = "count") +
   # stat_count() +
   coord_flip()
   
 # df %>% count(manufacturer)
 
 tibble(university = c("MG", "Calicut", "Kerala", "CUSAT"),
-       noOfStudents = c(120, 140, 90, 150)) %>% 
-  ggplot(aes(x = university, y = noOfStudents)) +
+       noOfStudents = c(120, 140, 90, 150),
+       avgMarks = c(40, 50, 60, 70)) %>% 
+  ggplot(aes(x = university, y = avgMarks)) +
   geom_bar(stat = "identity")
 
 df %>% 
@@ -124,8 +125,9 @@ df %>%
   ggplot(aes(x = manufacturer, y = displ)) +
   stat_summary(
     fun.min = min,
-    fun = median, 
+    fun = "median", 
     fun.max = max) +
+  stat_summary(fun = "mean", colour = "red") +
   coord_flip()
 
 # 5. Position adjustments ====
