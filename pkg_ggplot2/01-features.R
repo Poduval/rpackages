@@ -28,7 +28,8 @@ df
 
 df %>% 
   ggplot(mapping = aes(x = displ, y = hwy)) +
-  geom_point()
+  geom_point() +
+  theme_gray()
 
 df %>% 
   ggplot(mapping = aes(x = displ, y = hwy)) + 
@@ -102,6 +103,7 @@ df %>%
   ggplot(aes(x = manufacturer)) +
   geom_bar(stat = "count") +
   # stat_count() +
+  # geom_text(stat = 'count', aes(label = ..count..), hjust = -0.5) +
   coord_flip()
   
 # df %>% count(manufacturer)
@@ -120,15 +122,16 @@ df %>%
 
 # _4.2 stat_summary ====
 # There are over 20 stats for you to use. Each stat is a function
-
+# https://ggplot2.tidyverse.org/reference/stat_summary.html 
 df %>% 
   ggplot(aes(x = manufacturer, y = displ)) +
   stat_summary(
     fun.min = min,
     fun = "median", 
     fun.max = max) +
-  stat_summary(fun = "mean", colour = "red") +
+  stat_summary(fun = "mean", colour = "red", geom = "point", group = 1) +
   coord_flip()
+# use geom = "line" to get lines connecting the means.
 
 # 5. Position adjustments ====
 df %>% 
@@ -158,6 +161,7 @@ df %>%
 df %>% 
   ggplot(aes(x = manufacturer, colour = trans)) +
   geom_bar(position = "identity", fill = NA) + 
+  # geom_text(stat = 'count', aes(label = ..count..), hjust = 2) +
   coord_flip()
 
 # _5.2 position = "fill" ====
