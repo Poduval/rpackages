@@ -1,0 +1,130 @@
+---
+title: "Introduction to tidyverse"
+author: Rakesh Poduval, `r Sys.Date()`
+output:
+  html_document: 
+    toc: TRUE
+    toc_depth: 2
+    toc_float: TRUE
+    theme: yeti
+    highlight: monochrome
+    number_sections: false
+---
+
+```{r setup, echo = F, include = F, cache = F}
+library(devtools)
+dev_mode(T)
+library(tidyverse)
+```
+
+# Specification
+The tidyverse is an opinionated collection of R packages designed for data science. All packages share an underlying design philosophy, grammar, and data structures. 
+
+Install the complete tidyverse with: `install.packages('tidyverse')` 
+
+For online documentation refer : `browseVignettes(package = "dplyr")`
+
+Book for reference : [amazon - R for Data Science by Hadley Wickham](https://www.amazon.com/R-Data-Science-Hadley-Wickham/dp/1491910399/ref=as_li_ss_tl?ie=UTF8&qid=1469550189&sr=8-1&keywords=R+for+data+science&linkCode=sl1&tag=devtools-20&linkId=6fe0069f9605cf847ed96c191f4e84dd)
+
+The book is real good and is reccomended strongly. 
+
+# examples
+The package is extremely powerful and easy to work with. I am keeping examples of only the basic daiy to day operations we do. Lets take the so called `iris` data for this. Hadley uses `%>%` which he calls pipes to perform operations on a given data set. You can use the keyboard shortcut `ctrl + shift + M` for the pipe.
+
+## data manupulation
+Lets start with simple operations like sorting the data.
+```{r, message = F}
+## order with respect to a column, by defualt it is in ascending order
+iris %>% arrange(Sepal.Length) %>% head(5)
+iris %>% arrange(desc(Sepal.Length)) %>% head(5)
+```
+
+Renaming existing columns. 
+```{r, message = F}
+## renaming column name
+iris %>% rename(sepalWidth = Sepal.Width) %>% head(3)
+```
+
+The select can be used in many ways based on the requirement. Please go through the online reference for more details.
+```{r, message = F}
+## selecting columns from a data. This also can be used for renaming
+iris %>% select(sepalWidth = Sepal.Width, Petal.Width) %>% head(3)
+```
+
+Adding a new column can be dine in multiple ways. `mutate()` is useful to add new columns that are functions of existing columns. `transmute()` eliminates all other columns not mentioned in it.
+
+```{r, message = F}
+# transform adds a new column
+iris %>% transform(ratio = Sepal.Length/Sepal.Width) %>% head(3)
+
+# mutate adds new columns that are functions of existing columns
+iris %>% mutate(ratio = Sepal.Length/Sepal.Width,
+                adjusted = ratio * Petal.Length) %>% head(3)
+
+# transmute eliminates rest of the columns
+iris %>% transmute(ratio = Sepal.Length/Sepal.Width) %>% head(3)
+```
+
+To subset a data use the `filter()` command
+```{r, message = F}
+iris %>% filter(Sepal.Length >= 5, Sepal.Width <= 6) %>% head(5)
+```
+
+The group by is one of my favourite feature.
+```{r, message = F}
+# descriptives of single variable
+iris %>% 
+  group_by(Species) %>% 
+  summarise(N = n(), 
+            mean = mean(Sepal.Length),
+            median = median(Sepal.Length))
+
+# descriptive of all variables
+iris %>% group_by(Species) %>% summarise_all(c('mean'))
+# iris %>% group_by(Species) %>% summarise_all(c('mean', 'median'))
+```
+
+Reshaping is widely used in our day to day operations
+```{r }
+# long data
+iris %>% gather(variable, value, -Species) %>% head(5)
+
+# wide data
+  
+```
+
+we can even see add graphs at the end of any pipe operation
+```{r, results = 'asis', message = F}
+iris %>% 
+  filter(Sepal.Length > 5) %>% 
+  mutate(ratio = Sepal.Length/Sepal.Width) %>% 
+  ggplot(aes(Sepal.Length, ratio)) +
+  geom_point(aes(color = Species))
+```
+
+## linear modelling
+Lets say we want to check the sensitivity of an explanatory variable after fitting a linear model. `modelr` package is very useful for this purpose which is currently under developement and not added to the `tidyverse` package. But I expect it to be added in the later versions.
+In the below example first 
+
+* we fit a model
+* prepare sensitivity data
+* predict with the model
+* plot sensitivity plot
+* check if predictions are significantly different for different Species
+```{r }
+library(modelr)
+  
+fit <- lm(Sepal.Length ~ . , data = iris)
+
+data_grid(iris, 
+          Species, 
+          Petal.Length = seq_range(Petal.Length, n = 5), 
+          .model = fit) %>% 
+  add_predictions(fit, var = "pred") %>% 
+  ggplot(aes_string("Petal.Length", "pred", color = "Species")) +
+  geom_line() +
+  geom_point()
+```
+
+# Comments
+This helps in narrating the complete story of the operations one is performing with the data and also add some interesting results at the end.
